@@ -1,5 +1,11 @@
 import React from 'react';
-import { View, ScrollView, Image, Dimensions, TouchableOpacity } from 'react-native';
+import {
+  View,
+  ScrollView,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+} from 'react-native';
 import PropTypes from 'prop-types';
 const { width } = Dimensions.get('window');
 
@@ -23,30 +29,47 @@ class RNCarousel extends React.PureComponent {
     clearInterval(this.intervalId);
   }
 
-  onScroll = data => {
+  onScroll = (data) => {
     this.setState({
       width: data.nativeEvent.contentSize.width,
-      interval: Math.ceil((data.nativeEvent.contentOffset.x / data.nativeEvent.layoutMeasurement.width).toFixed(2)),
+      interval: Math.ceil(
+        (
+          data.nativeEvent.contentOffset.x /
+          data.nativeEvent.layoutMeasurement.width
+        ).toFixed(2)
+      ),
     });
   };
 
-  scrollTo = direction => {
+  scrollTo = (direction) => {
     const { data } = this.props;
     const { interval } = this.state;
     if (this.scrollView && direction === 'left') {
       if (interval - 1 === 0) {
-        this.scrollView.scrollTo({ x: width * (data.length - 1), y: 0, animated: true });
+        this.scrollView.scrollTo({
+          x: width * (data.length - 1),
+          y: 0,
+          animated: true,
+        });
       } else {
-        this.scrollView.scrollTo({ x: width * (interval - 1), y: 0, animated: true });
+        this.scrollView.scrollTo({
+          x: width * (interval - 1),
+          y: 0,
+          animated: true,
+        });
       }
     } else if (this.scrollView && direction === 'right') {
       if (interval + 1 === data.length) {
         this.scrollView.scrollTo({ x: 0, y: 0, animated: true });
       } else {
-        this.scrollView.scrollTo({ x: width * (interval + 1), y: 0, animated: true });
+        this.scrollView.scrollTo({
+          x: width * (interval + 1),
+          y: 0,
+          animated: true,
+        });
       }
     }
-  }
+  };
 
   render() {
     const {
@@ -64,59 +87,102 @@ class RNCarousel extends React.PureComponent {
       indicatorStyle,
       isCustomCarouselContent,
       carouselContent,
-      onImagePressCb
+      onImagePressCb,
     } = this.props;
     const { interval } = this.state;
     return (
       <View style={{ ...styles.container, height }}>
-        {showArrows && <TouchableOpacity style={styles.leftArrow} onPress={() => this.scrollTo('left')}>
-          <Image style={{ width: arrowSize, height: arrowSize }} source={require('../assets/left.png')} />
-        </TouchableOpacity>}
+        {showArrows && (
+          <TouchableOpacity
+            style={styles.leftArrow}
+            onPress={() => this.scrollTo('left')}
+          >
+            <Image
+              style={{ width: arrowSize, height: arrowSize }}
+              source={require('../assets/left.png')}
+            />
+          </TouchableOpacity>
+        )}
         <ScrollView
           horizontal={true}
-          ref={ref => (this.scrollView = ref)}
-          contentContainerStyle={{ ...styles.scrollView, ...contentContainerStyle }}
+          ref={(ref) => (this.scrollView = ref)}
+          contentContainerStyle={{
+            ...styles.scrollView,
+            ...contentContainerStyle,
+          }}
           showsHorizontalScrollIndicator={showsHorizontalScrollIndicator}
-          onScroll={data => this.onScroll(data)}
+          onScroll={(data) => this.onScroll(data)}
           scrollEventThrottle={200}
           pagingEnabled
-          decelerationRate="fast">
+          decelerationRate="fast"
+        >
           <View style={styles.carouselContainer}>
             <View style={styles.carouselContent}>
-              {!isCustomCarouselContent && data && data.length > 0 && data.map((item, index) => {
-                if (!item?.url) {
-                  return null;
-                }
-                return (
-                  <TouchableOpacity activeOpacity={0.7} onPress={() => onImagePressCb(item, index)}>
-                    <Image key={`index-images-${index}`} style={{ resizeMode: imageResizeMode, height: height, width: width }} source={item?.url.match(/http|https/g) ? { uri: item.url } : require(item.url)} />
-                  </TouchableOpacity>
-                )
-              })}
-              {
-                isCustomCarouselContent && <>{carouselContent}</>
-              }
+              {!isCustomCarouselContent &&
+                data &&
+                data.length > 0 &&
+                data.map((item, index) => {
+                  if (!item?.url) {
+                    return null;
+                  }
+                  return (
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => onImagePressCb(item, index)}
+                    >
+                      <Image
+                        key={`index-images-${index}`}
+                        style={{
+                          resizeMode: imageResizeMode,
+                          height: height,
+                          width: width,
+                        }}
+                        source={
+                          item?.url.match(/http|https/g)
+                            ? { uri: item.url }
+                            : require(item.url)
+                        }
+                      />
+                    </TouchableOpacity>
+                  );
+                })}
+              {isCustomCarouselContent && <>{carouselContent}</>}
             </View>
           </View>
         </ScrollView>
-        {showArrows && <TouchableOpacity style={styles.rightArrow} onPress={() => this.scrollTo('right')}>
-          <Image style={{ width: arrowSize, height: arrowSize }} source={require('../assets/right.png')} />
-        </TouchableOpacity>}
-        {showIndicator && <View style={{ ...styles.indicatorContainer, ...indicatorContainerStyle }}>
-          {data &&
-            data.map((item, index) => {
-              return (
-                <View
-                  key={`index-bullets-${index}`}
-                  style={{
-                    ...styles.indicatorContent,
-                    borderColor: indicatorBorderColor,
-                    ...indicatorStyle,
-                    ...(interval === index ? { backgroundColor: indicatorActiveBackgroundColor } : {}),
-                  }}></View>
-              );
-            })}
-        </View>}
+        {showArrows && (
+          <TouchableOpacity
+            style={styles.rightArrow}
+            onPress={() => this.scrollTo('right')}
+          >
+            <Image
+              style={{ width: arrowSize, height: arrowSize }}
+              source={require('../assets/right.png')}
+            />
+          </TouchableOpacity>
+        )}
+        {showIndicator && (
+          <View
+            style={{ ...styles.indicatorContainer, ...indicatorContainerStyle }}
+          >
+            {data &&
+              data.map((item, index) => {
+                return (
+                  <View
+                    key={`index-bullets-${index}`}
+                    style={{
+                      ...styles.indicatorContent,
+                      borderColor: indicatorBorderColor,
+                      ...indicatorStyle,
+                      ...(interval === index
+                        ? { backgroundColor: indicatorActiveBackgroundColor }
+                        : {}),
+                    }}
+                  ></View>
+                );
+              })}
+          </View>
+        )}
       </View>
     );
   }
@@ -138,7 +204,7 @@ RNCarousel.propTypes = {
   contentContainerStyle: PropTypes.object,
   indicatorContainerStyle: PropTypes.object,
   carouselContent: PropTypes.componentOrElement,
-  onImagePressCb: PropTypes.func
+  onImagePressCb: PropTypes.func,
 };
 
 RNCarousel.defaultProps = {
@@ -156,7 +222,7 @@ RNCarousel.defaultProps = {
   indicatorStyle: {},
   contentContainerStyle: {},
   indicatorContainerStyle: {},
-  onImagePressCb: () => { }
+  onImagePressCb: () => {},
 };
 
 export default RNCarousel;
@@ -179,7 +245,7 @@ const styles = StyleSheet.create({
   },
   carouselContainer: {
     flex: 1,
-    flexDirection: 'row'
+    flexDirection: 'row',
   },
   carouselContent: {
     flexBasis: '100%',
@@ -197,14 +263,14 @@ const styles = StyleSheet.create({
     left: 10,
     top: '50%',
     bottom: 0,
-    zIndex: 10
+    zIndex: 10,
   },
   rightArrow: {
     position: 'absolute',
     right: 10,
     top: '50%',
     bottom: 0,
-    zIndex: 10
+    zIndex: 10,
   },
   indicatorContainer: {
     position: 'absolute',
