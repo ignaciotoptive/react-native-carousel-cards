@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import PropTypes from 'prop-types';
+import debounce from 'lodash/debounce';
+
 const { width } = Dimensions.get('window');
 
 class RNCarousel extends React.PureComponent {
@@ -18,9 +20,10 @@ class RNCarousel extends React.PureComponent {
 
   componentDidMount() {
     const { loop } = this.props;
+    const { loopInterval } = this.props;
     setTimeout(() => {
       if (loop) {
-        intervalId = setInterval(() => this.scrollTo('right'), 4000);
+        intervalId = setInterval(() => this.scrollTo('right'), loopInterval);
       }
     }, 10);
   }
@@ -29,16 +32,37 @@ class RNCarousel extends React.PureComponent {
     clearInterval(this.intervalId);
   }
 
+  debouncedOnScroll = debounce(
+    () => {
+      if (this.props.onScroll) {
+        this.props.onScroll({ image: this.props.data[this.state.interval] });
+      }
+    },
+    500,
+    {
+      leading: true,
+      trailing: false,
+      maxWait: 500,
+    }
+  );
+
   onScroll = (data) => {
-    this.setState({
-      width: data.nativeEvent.contentSize.width,
-      interval: Math.ceil(
-        (
-          data.nativeEvent.contentOffset.x /
-          data.nativeEvent.layoutMeasurement.width
-        ).toFixed(2)
-      ),
-    });
+    this.setState(
+      {
+        width: data.nativeEvent.contentSize.width,
+        interval: Math.ceil(
+          (
+            data.nativeEvent.contentOffset.x /
+            data.nativeEvent.layoutMeasurement.width
+          ).toFixed(2)
+        ),
+      },
+      this.debouncedOnScroll
+    );
+  };
+
+  getCurrentElement = () => {
+    return this.props.data[this.state.interval];
   };
 
   scrollTo = (direction) => {
@@ -127,11 +151,12 @@ class RNCarousel extends React.PureComponent {
                   }
                   return (
                     <TouchableOpacity
+                      key={index}
                       activeOpacity={0.7}
                       onPress={() => onImagePressCb(item, index)}
                     >
                       <Image
-                        key={`index-images-${index}`}
+                        key={index}
                         style={{
                           resizeMode: imageResizeMode,
                           height: height,
@@ -169,7 +194,7 @@ class RNCarousel extends React.PureComponent {
               data.map((item, index) => {
                 return (
                   <View
-                    key={`index-bullets-${index}`}
+                    key={index}
                     style={{
                       ...styles.indicatorContent,
                       borderColor: indicatorBorderColor,
@@ -196,6 +221,7 @@ RNCarousel.propTypes = {
   height: PropTypes.number,
   arrowSize: PropTypes.number,
   loop: PropTypes.bool,
+  loopInterval: PropTypes.number,
   showArrows: PropTypes.bool,
   showIndicator: PropTypes.bool,
   isCustomCarouselContent: PropTypes.bool,
@@ -203,8 +229,9 @@ RNCarousel.propTypes = {
   indicatorStyle: PropTypes.object,
   contentContainerStyle: PropTypes.object,
   indicatorContainerStyle: PropTypes.object,
-  carouselContent: PropTypes.componentOrElement,
+  carouselContent: PropTypes.element,
   onImagePressCb: PropTypes.func,
+  onScroll: PropTypes.func,
 };
 
 RNCarousel.defaultProps = {
@@ -215,6 +242,7 @@ RNCarousel.defaultProps = {
   height: 200,
   arrowSize: 25,
   loop: true,
+  loopInterval: 4000,
   showArrows: true,
   showIndicator: true,
   isCustomCarouselContent: false,
@@ -223,6 +251,7 @@ RNCarousel.defaultProps = {
   contentContainerStyle: {},
   indicatorContainerStyle: {},
   onImagePressCb: () => {},
+  onScroll: () => {},
 };
 
 export default RNCarousel;
